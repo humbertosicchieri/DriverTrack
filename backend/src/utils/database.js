@@ -1,6 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
 
 let db;
 
@@ -19,7 +20,7 @@ function getDb() {
   return db;
 }
 
-function initDatabase() {
+async function initDatabase() {
   const database = getDb();
 
   database.exec(`
@@ -28,6 +29,7 @@ function initDatabase() {
       name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
+      role TEXT DEFAULT 'user',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -60,6 +62,19 @@ function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_earnings_user_date ON earnings(user_id, date);
     CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, date);
   `);
+
+  // Create default admin user if not exists
+  const adminEmail = 'admin@drivertrack.com';
+  const existingAdmin = database.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
+
+  if (!existingAdmin) {
+    const adminId = uuidv4();
+    const hashedPassword = await bcrypt.hash('admin123', 12);
+    database.prepare(
+      'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)'
+    ).run(adminId, 'Administrador', adminEmail, hashedPassword, 'admin');
+    console.log('Usuário admin criado: admin@drivertrack.com / admin123');
+  }
 
   console.log('Banco de dados inicializado com sucesso');
 }

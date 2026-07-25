@@ -10,7 +10,7 @@ const expensesRoutes = require('./routes/expenses');
 const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Security middleware
 app.use(helmet());
@@ -45,8 +45,11 @@ app.get('/api/health', (req, res) => {
 });
 
 // Initialize database and start server
-initDatabase();
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+initDatabase().then(() => {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}).catch((err) => {
+  console.error('Erro ao inicializar banco de dados:', err);
+  process.exit(1);
 });
