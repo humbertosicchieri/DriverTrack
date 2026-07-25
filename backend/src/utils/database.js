@@ -7,13 +7,22 @@ let db;
 
 function getDb() {
   if (!db) {
-    const dbPath = process.env.DB_PATH || path.join(__dirname, '../../data/database.sqlite');
     const fs = require('fs');
+    const dbPath = process.env.DB_PATH || path.join(__dirname, '../../data/database.sqlite');
     const dir = path.dirname(dbPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    db = new Database(dbPath);
+    try {
+      db = new Database(dbPath);
+    } catch (err) {
+      const fallbackPath = path.join(__dirname, '../../data/database.sqlite');
+      const fallbackDir = path.dirname(fallbackPath);
+      if (!fs.existsSync(fallbackDir)) {
+        fs.mkdirSync(fallbackDir, { recursive: true });
+      }
+      db = new Database(fallbackPath);
+    }
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
   }
