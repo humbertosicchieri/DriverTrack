@@ -1,12 +1,12 @@
-version: '3.8'
 services:
   backend:
     build: ./backend
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
-      - JWT_SECRET=${JWT_SECRET}
       - DB_PATH=/data/database.sqlite
     volumes:
       - db-data:/data
