@@ -74,6 +74,13 @@ class ApiClient {
         return this.request('/auth/me');
     }
 
+    async changePassword(currentPassword, newPassword) {
+        return this.request('/auth/change-password', {
+            method: 'POST',
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+    }
+
     // Earnings
     async getEarnings(params = {}) {
         const query = new URLSearchParams(params).toString();
@@ -137,6 +144,46 @@ class ApiClient {
 
     async getDailyDetails(date) {
         return this.request(`/dashboard/daily?date=${date}`);
+    }
+
+    // Admin
+    async adminGetUsers() {
+        return this.request('/admin/users');
+    }
+
+    async adminGetUser(id) {
+        return this.request(`/admin/users/${id}`);
+    }
+
+    async adminCreateUser(data) {
+        return this.request('/admin/users', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async adminUpdateUser(id, data) {
+        return this.request(`/admin/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async adminDeleteUser(id) {
+        return this.request(`/admin/users/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async adminResetPassword(id, password) {
+        return this.request(`/admin/users/${id}/reset-password`, {
+            method: 'POST',
+            body: JSON.stringify({ password })
+        });
+    }
+
+    async adminGetStats() {
+        return this.request('/admin/stats');
     }
 
     logout() {

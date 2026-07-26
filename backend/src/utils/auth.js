@@ -24,4 +24,25 @@ function authMiddleware(req, res, next) {
   }
 }
 
-module.exports = { generateToken, authMiddleware, JWT_SECRET };
+function adminMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token de autenticação necessário' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.userId = decoded.userId;
+    const { getDb } = require('./database');
+    const db = getDb();
+    const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
+    }
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
+  }
+}
+
+module.exports = { generateToken, authMiddleware, adminMiddleware, JWT_SECRET };

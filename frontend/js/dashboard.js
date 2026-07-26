@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initDate();
     loadDashboard();
     initModals();
+    initSettings();
+    initAdmin();
     
     document.getElementById('periodSelect').addEventListener('change', loadDashboard);
 });
@@ -21,6 +23,13 @@ function initUser() {
     if (user) {
         document.getElementById('userName').textContent = user.name;
         document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+        document.getElementById('userRole').textContent = user.role || '';
+        
+        if (user.role === 'admin') {
+            document.querySelectorAll('.admin-only').forEach(el => {
+                el.style.display = '';
+            });
+        }
     }
 }
 
@@ -43,17 +52,21 @@ function initNavigation() {
             document.getElementById(currentPage + 'Page').classList.add('active');
             
             const titles = {
-                overview: 'Visão Geral',
+                overview: 'Visao Geral',
                 earnings: 'Ganhos',
                 expenses: 'Despesas',
-                daily: 'Diário'
+                daily: 'Diario',
+                settings: 'Configuracoes',
+                admin: 'Admin'
             };
-            document.getElementById('pageTitle').textContent = titles[currentPage];
+            document.getElementById('pageTitle').textContent = titles[currentPage] || '';
             
             if (currentPage === 'earnings') loadEarnings();
             if (currentPage === 'expenses') loadExpenses();
             if (currentPage === 'daily') loadDaily();
             if (currentPage === 'overview') loadDashboard();
+            if (currentPage === 'settings') populateSettings();
+            if (currentPage === 'admin') loadAdminData();
         });
     });
 
@@ -85,11 +98,11 @@ function formatDate(dateStr) {
 }
 
 const categoryLabels = {
-    combustivel: 'Combustível',
-    manutencao: 'Manutenção',
+    combustivel: 'Combustivel',
+    manutencao: 'Manutencao',
     seguro: 'Seguro',
     lavagem: 'Lavagem',
-    alimentacao: 'Alimentação',
+    alimentacao: 'Alimentacao',
     estacionamento: 'Estacionamento',
     taxa_plataforma: 'Taxa Plataforma',
     imposto: 'Imposto',
@@ -98,16 +111,16 @@ const categoryLabels = {
 };
 
 const categoryIcons = {
-    combustivel: '⛽',
-    manutencao: '🔧',
-    seguro: '🛡️',
-    lavagem: '🚿',
-    alimentacao: '🍔',
-    estacionamento: '🅿️',
-    taxa_plataforma: '📱',
-    imposto: '📋',
-    celular: '📞',
-    outros: '📦'
+    combustivel: '\u26FD',
+    manutencao: '\uD83D\uDD27',
+    seguro: '\uD83D\uDEE1\uFE0F',
+    lavagem: '\uD83D\uDEBF',
+    alimentacao: '\uD83C\uDF54',
+    estacionamento: '\u267F',
+    taxa_plataforma: '\uD83D\uDCF1',
+    imposto: '\uD83D\uDCCB',
+    celular: '\uD83D\uDCDE',
+    outros: '\uD83D\uDCE6'
 };
 
 // Dashboard
@@ -297,7 +310,7 @@ function renderExpenseRanking(expenses) {
     container.innerHTML = expenses.map((e, i) => `
         <div class="ranking-item">
             <span class="ranking-position">${i + 1}</span>
-            <span class="ranking-icon">${categoryIcons[e.category] || '📦'}</span>
+            <span class="ranking-icon">${categoryIcons[e.category] || '\uD83D\uDCE6'}</span>
             <span class="ranking-name">${categoryLabels[e.category] || e.category}</span>
             <div class="ranking-bar-bg">
                 <div class="ranking-bar" style="width: ${(e.total / expenses[0].total * 100)}%"></div>
@@ -367,7 +380,7 @@ async function loadExpenses() {
                 <td><span class="category-badge">${categoryIcons[e.category] || ''} ${categoryLabels[e.category] || e.category}</span></td>
                 <td>${e.description || '-'}</td>
                 <td class="expense-value">${formatCurrency(e.amount)}</td>
-                <td>${e.recurring ? 'Sim' : 'Não'}</td>
+                <td>${e.recurring ? 'Sim' : 'Nao'}</td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn-icon-sm" onclick="editExpense('${e.id}')" title="Editar">
@@ -421,7 +434,7 @@ async function loadDaily() {
             `).join('');
         }
     } catch (error) {
-        showToast('Erro ao carregar dados diários', 'error');
+        showToast('Erro ao carregar dados diarios', 'error');
     }
 }
 
@@ -485,7 +498,7 @@ function showEarningModal(data = null) {
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="earningBonus">Bônus (R$)</label>
+                    <label for="earningBonus">Bonus (R$)</label>
                     <input type="number" id="earningBonus" value="${data?.bonus || ''}" step="0.01" min="0" placeholder="0.00">
                 </div>
                 <div class="form-group">
@@ -494,11 +507,11 @@ function showEarningModal(data = null) {
                 </div>
             </div>
             <div class="form-group">
-                <label for="earningNotes">Observações</label>
+                <label for="earningNotes">Observacoes</label>
                 <textarea id="earningNotes" rows="2" placeholder="Opcional">${data?.notes || ''}</textarea>
             </div>
             <button type="submit" class="btn btn-primary btn-full">
-                ${isEdit ? 'Salvar Alterações' : 'Adicionar Ganhos'}
+                ${isEdit ? 'Salvar Alteracoes' : 'Adicionar Ganhos'}
             </button>
         </form>
     `;
@@ -564,7 +577,7 @@ function showExpenseModal(data = null) {
                 </div>
             </div>
             <div class="form-group">
-                <label for="expenseDescription">Descrição</label>
+                <label for="expenseDescription">Descricao</label>
                 <input type="text" id="expenseDescription" value="${data?.description || ''}" placeholder="Ex: Gasolina Shell">
             </div>
             <div class="form-group">
@@ -574,7 +587,7 @@ function showExpenseModal(data = null) {
                 </label>
             </div>
             <button type="submit" class="btn btn-primary btn-full">
-                ${isEdit ? 'Salvar Alterações' : 'Adicionar Despesa'}
+                ${isEdit ? 'Salvar Alteracoes' : 'Adicionar Despesa'}
             </button>
         </form>
     `;
@@ -622,7 +635,7 @@ async function deleteEarning(id) {
     if (!confirm('Tem certeza que deseja excluir este registro?')) return;
     try {
         await api.deleteEarning(id);
-        showToast('Registro excluído', 'success');
+        showToast('Registro excluido', 'success');
         loadEarnings();
         loadDashboard();
     } catch (error) {
@@ -644,11 +657,215 @@ async function deleteExpense(id) {
     if (!confirm('Tem certeza que deseja excluir este registro?')) return;
     try {
         await api.deleteExpense(id);
-        showToast('Registro excluído', 'success');
+        showToast('Registro excluido', 'success');
         loadExpenses();
         loadDashboard();
     } catch (error) {
         showToast('Erro ao excluir', 'error');
+    }
+}
+
+// Settings
+function initSettings() {
+    document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+        
+        if (newPassword !== confirmNewPassword) {
+            showToast('As senhas nao coincidem', 'error');
+            return;
+        }
+        
+        if (newPassword.length < 6) {
+            showToast('A nova senha deve ter pelo menos 6 caracteres', 'error');
+            return;
+        }
+        
+        try {
+            await api.changePassword(currentPassword, newPassword);
+            showToast('Senha alterada com sucesso', 'success');
+            document.getElementById('changePasswordForm').reset();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+}
+
+function populateSettings() {
+    const user = api.getUser();
+    if (user) {
+        document.getElementById('settingsName').textContent = user.name || '-';
+        document.getElementById('settingsEmail').textContent = user.email || '-';
+        document.getElementById('settingsRole').textContent = user.role === 'admin' ? 'Administrador' : 'Motorista';
+        document.getElementById('settingsSince').textContent = user.created_at 
+            ? new Date(user.created_at).toLocaleDateString('pt-BR') 
+            : '-';
+    }
+}
+
+// Admin
+function initAdmin() {
+    document.getElementById('addUserBtn').addEventListener('click', () => showUserModal());
+}
+
+async function loadAdminData() {
+    try {
+        const stats = await api.adminGetStats();
+        document.getElementById('adminTotalUsers').textContent = stats.totalUsers || 0;
+        document.getElementById('adminTotalEarnings').textContent = formatCurrency(stats.totalEarnings || 0);
+        document.getElementById('adminTotalExpenses').textContent = formatCurrency(stats.totalExpenses || 0);
+        document.getElementById('adminTotalTrips').textContent = stats.totalTrips || 0;
+    } catch (error) {
+        // Stats endpoint may not exist
+    }
+    
+    try {
+        const users = await api.adminGetUsers();
+        const tbody = document.getElementById('usersTableBody');
+        const empty = document.getElementById('usersEmpty');
+        
+        if (users.length === 0) {
+            tbody.innerHTML = '';
+            empty.style.display = 'flex';
+            return;
+        }
+        
+        empty.style.display = 'none';
+        tbody.innerHTML = users.map(u => `
+            <tr>
+                <td>${u.name}</td>
+                <td>${u.email}</td>
+                <td><span class="role-badge ${u.role}">${u.role === 'admin' ? 'Admin' : 'User'}</span></td>
+                <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-'}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon-sm" onclick="showUserModal(${JSON.stringify(u).replace(/"/g, '&quot;')})" title="Editar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button class="btn-icon-sm" onclick="showResetPasswordModal('${u.id}')" title="Resetar Senha">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        </button>
+                        <button class="btn-icon-sm danger" onclick="deleteUser('${u.id}')" title="Excluir">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        showToast('Erro ao carregar usuarios', 'error');
+    }
+}
+
+function showUserModal(data = null) {
+    const isEdit = !!data;
+    
+    const html = `
+        <form id="userForm" class="modal-form">
+            <div class="form-group">
+                <label for="userName">Nome</label>
+                <input type="text" id="userNameInput" value="${data?.name || ''}" required placeholder="Nome completo">
+            </div>
+            <div class="form-group">
+                <label for="userEmail">Email</label>
+                <input type="email" id="userEmailInput" value="${data?.email || ''}" required placeholder="email@exemplo.com" ${isEdit ? 'readonly style="opacity:0.6"' : ''}>
+            </div>
+            ${!isEdit ? `
+            <div class="form-group">
+                <label for="userPassword">Senha</label>
+                <input type="password" id="userPasswordInput" required minlength="6" placeholder="Minimo 6 caracteres">
+            </div>
+            ` : ''}
+            <div class="form-group">
+                <label for="userRole">Funcao</label>
+                <select id="userRoleInput">
+                    <option value="user" ${data?.role === 'user' || !data ? 'selected' : ''}>Motorista</option>
+                    <option value="admin" ${data?.role === 'admin' ? 'selected' : ''}>Administrador</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">
+                ${isEdit ? 'Salvar Alteracoes' : 'Criar Usuario'}
+            </button>
+        </form>
+    `;
+    
+    showModal(isEdit ? 'Editar Usuario' : 'Novo Usuario', html);
+    
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = {
+            name: document.getElementById('userNameInput').value,
+            email: document.getElementById('userEmailInput').value,
+            role: document.getElementById('userRoleInput').value
+        };
+        
+        if (!isEdit) {
+            formData.password = document.getElementById('userPasswordInput').value;
+        }
+        
+        try {
+            if (isEdit) {
+                await api.adminUpdateUser(data.id, formData);
+                showToast('Usuario atualizado com sucesso', 'success');
+            } else {
+                await api.adminCreateUser(formData);
+                showToast('Usuario criado com sucesso', 'success');
+            }
+            closeModal();
+            loadAdminData();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+}
+
+function showResetPasswordModal(userId) {
+    const html = `
+        <form id="resetPasswordForm" class="modal-form">
+            <div class="form-group">
+                <label for="resetPassword">Nova Senha</label>
+                <input type="password" id="resetPasswordInput" required minlength="6" placeholder="Minimo 6 caracteres">
+            </div>
+            <div class="form-group">
+                <label for="resetPasswordConfirm">Confirmar Senha</label>
+                <input type="password" id="resetPasswordConfirmInput" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Resetar Senha</button>
+        </form>
+    `;
+    
+    showModal('Resetar Senha', html);
+    
+    document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const password = document.getElementById('resetPasswordInput').value;
+        const confirm = document.getElementById('resetPasswordConfirmInput').value;
+        
+        if (password !== confirm) {
+            showToast('As senhas nao coincidem', 'error');
+            return;
+        }
+        
+        try {
+            await api.adminResetPassword(userId, password);
+            showToast('Senha resetada com sucesso', 'success');
+            closeModal();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+}
+
+async function deleteUser(id) {
+    if (!confirm('Tem certeza que deseja excluir este usuario?')) return;
+    try {
+        await api.adminDeleteUser(id);
+        showToast('Usuario excluido', 'success');
+        loadAdminData();
+    } catch (error) {
+        showToast('Erro ao excluir usuario', 'error');
     }
 }
 

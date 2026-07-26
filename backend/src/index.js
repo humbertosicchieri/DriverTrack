@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const earningsRoutes = require('./routes/earnings');
 const expensesRoutes = require('./routes/expenses');
 const dashboardRoutes = require('./routes/dashboard');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -38,16 +39,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/earnings', earningsRoutes);
 app.use('/api/expenses', expensesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.1.0', timestamp: new Date().toISOString() });
 });
 
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`Servidor v1.1.0 rodando na porta ${PORT}`);
   });
 }).catch((err) => {
   console.error('Erro ao inicializar banco de dados:', err);

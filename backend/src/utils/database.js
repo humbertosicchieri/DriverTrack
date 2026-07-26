@@ -39,6 +39,7 @@ async function initDatabase() {
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       role TEXT DEFAULT 'user',
+      active INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -72,6 +73,13 @@ async function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, date);
   `);
 
+  // Migration: add active column if missing
+  try {
+    database.prepare('SELECT active FROM users LIMIT 1').get();
+  } catch {
+    database.exec("ALTER TABLE users ADD COLUMN active INTEGER DEFAULT 1");
+  }
+
   // Create default admin user if not exists
   const adminEmail = 'admin@drivertrack.com';
   const existingAdmin = database.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
@@ -82,7 +90,7 @@ async function initDatabase() {
     database.prepare(
       'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)'
     ).run(adminId, 'Administrador', adminEmail, hashedPassword, 'admin');
-    console.log('Usuário admin criado: admin@drivertrack.com / admin123');
+    console.log('Usuario admin criado: admin@drivertrack.com / admin123');
   }
 
   console.log('Banco de dados inicializado com sucesso');

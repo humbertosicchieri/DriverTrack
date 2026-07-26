@@ -1867,8 +1867,153 @@ a:hover {
 }
 
 /* ============================================
-   UTILITY & ANIMATION CLASSES
+   SETTINGS PAGE
    ============================================ */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.settings-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 24px;
+}
+
+.settings-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.account-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.account-field:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.account-field .label {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.account-field .value {
+    color: var(--text-white);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* ============================================
+   ADMIN PAGE
+   ============================================ */
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.admin-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    text-align: center;
+}
+
+.admin-stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent-green);
+    margin-bottom: 4px;
+}
+
+.admin-stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.page-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-actions h2 {
+    font-size: 18px;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.role-badge.admin {
+    background: rgba(255, 107, 107, 0.12);
+    color: var(--accent-red);
+    border: 1px solid rgba(255, 107, 107, 0.25);
+}
+
+.role-badge.user {
+    background: rgba(0, 212, 170, 0.12);
+    color: var(--accent-green);
+    border: 1px solid rgba(0, 212, 170, 0.25);
+}
+
+.user-role {
+    font-size: 11px;
+    color: var(--accent-green);
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+/* ============================================
+   RESPONSIVE - Admin
+   ============================================ */
+@media (max-width: 1024px) {
+    .admin-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+    UTILITY & ANIMATION CLASSES
+    ============================================ */
 .hidden {
     display: none !important;
 }
