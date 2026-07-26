@@ -1869,36 +1869,6 @@ a:hover {
     border-bottom: 1px solid var(--border-color);
 }
 
-.account-info {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.account-field {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.account-field:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.account-field .label {
-    color: var(--text-secondary);
-    font-size: 13px;
-}
-
-.account-field .value {
-    color: var(--text-white);
-    font-weight: 500;
-    font-size: 14px;
-}
-
 /* ============================================
    ADMIN PAGE
    ============================================ */
