@@ -76,6 +76,63 @@ router.get('/me', authMiddleware, (req, res) => {
   }
 });
 
+// Update own profile
+router.put('/profile', authMiddleware, [
+  body('name').trim().isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
+  body('email').isEmail().normalizeEmail().withMessage('Email invalido')
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  try {
+    const db = getDb();
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario nao encontrado' });
+    }
+    const { name, email } = req.body;
+    if (email !== user.email) {
+      const emailTaken = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(email, req.userId);
+      if (emailTaken) {
+        return res.status(409).json({ error: 'Email ja esta em uso' });
+      }
+    }
+    db.prepare('UPDATE users SET name = ?, email = ? WHERE id = ?').run(
+      name || user.name,
+      email || user.email,
+      req.userId
+    );
+    const updated = db.prepare('SELECT id, name, email, role, created_at FROM users WHERE id = ?').get(req.userId);
+    res.json(updated);
+  } catch (error) {
+    console.error('Erro ao atualizar perfil:', error);
+    res.status(500).json({ error: 'Erro ao atualizar perfil' });
+  }
+});
+
+// Delete own account
+router.delete('/account', authMiddleware, async (req, res) => {
+  try {
+    const db = getDb();
+    const user = db.prepare('SELECT id, role FROM users WHERE id = ?').get(req.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario nao encontrado' });
+    }
+    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+    if (user.role === 'admin' && totalUsers <= 1) {
+      return res.status(400).json({ error: 'Nao e possivel excluir o unico administrador' });
+    }
+    db.prepare('DELETE FROM earnings WHERE user_id = ?').run(req.userId);
+    db.prepare('DELETE FROM expenses WHERE user_id = ?').run(req.userId);
+    db.prepare('DELETE FROM users WHERE id = ?').run(req.userId);
+    res.json({ message: 'Conta excluida com sucesso' });
+  } catch (error) {
+    console.error('Erro ao excluir conta:', error);
+    res.status(500).json({ error: 'Erro ao excluir conta' });
+  }
+});
+
 // Change password
 router.post('/change-password', authMiddleware, [
   body('currentPassword').notEmpty().withMessage('Senha atual é obrigatória'),

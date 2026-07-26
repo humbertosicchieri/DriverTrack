@@ -385,47 +385,26 @@ a:hover {
     max-width: 380px;
 }
 
-.auth-tabs {
-    display: flex;
-    background: var(--bg-input);
-    border-radius: var(--radius-sm);
-    padding: 4px;
+.auth-header {
     margin-bottom: 32px;
-    border: 1px solid var(--border-color);
 }
 
-.auth-tab {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: all var(--transition-normal);
-}
-
-.auth-tab.active {
-    background: var(--accent-green);
-    color: var(--bg-primary);
+.auth-header h2 {
+    font-size: 22px;
     font-weight: 600;
+    color: var(--text-white);
+    margin-bottom: 6px;
 }
 
-.auth-tab:not(.active):hover {
-    color: var(--text-primary);
+.auth-header p {
+    font-size: 14px;
+    color: var(--text-secondary);
 }
 
 .auth-form {
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 20px;
-}
-
-.auth-form.active {
-    display: flex;
 }
 
 /* ============================================
@@ -2055,4 +2034,48 @@ a:hover {
 
 .pulse {
     animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   SETTINGS DANGER ZONE
+   ============================================ */
+.settings-danger {
+    border-color: rgba(255, 107, 107, 0.3);
+}
+
+.settings-danger h3 {
+    color: var(--accent-red);
+}
+
+.settings-danger p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255, 107, 107, 0.12);
+    color: var(--accent-red);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.btn-danger svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-danger:hover {
+    background: rgba(255, 107, 107, 0.25);
+    border-color: rgba(255, 107, 107, 0.5);
 }

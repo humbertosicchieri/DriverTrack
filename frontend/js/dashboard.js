@@ -691,15 +691,41 @@ function initSettings() {
             showToast(error.message, 'error');
         }
     });
+
+    document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('settingsNameInput').value.trim();
+        const email = document.getElementById('settingsEmailInput').value.trim();
+        
+        try {
+            await api.updateProfile(name, email);
+            showToast('Perfil atualizado com sucesso', 'success');
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+
+    document.getElementById('deleteAccountBtn').addEventListener('click', async () => {
+        if (!confirm('Tem certeza que deseja excluir sua conta? Esta acao e irreversivel.')) return;
+        try {
+            await api.deleteAccount();
+            showToast('Conta excluida com sucesso', 'success');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
 }
 
 function populateSettings() {
     const user = api.getUser();
     if (user) {
-        document.getElementById('settingsName').textContent = user.name || '-';
-        document.getElementById('settingsEmail').textContent = user.email || '-';
-        document.getElementById('settingsRole').textContent = user.role === 'admin' ? 'Administrador' : 'Motorista';
-        document.getElementById('settingsSince').textContent = user.created_at 
+        document.getElementById('settingsNameInput').value = user.name || '';
+        document.getElementById('settingsEmailInput').value = user.email || '';
+        document.getElementById('settingsRoleDisplay').value = user.role === 'admin' ? 'Administrador' : 'Motorista';
+        document.getElementById('settingsSinceDisplay').value = user.created_at 
             ? new Date(user.created_at).toLocaleDateString('pt-BR') 
             : '-';
     }

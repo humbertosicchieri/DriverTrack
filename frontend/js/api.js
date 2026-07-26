@@ -81,6 +81,21 @@ class ApiClient {
         });
     }
 
+    async updateProfile(name, email) {
+        const data = await this.request('/auth/profile', {
+            method: 'PUT',
+            body: JSON.stringify({ name, email })
+        });
+        this.setUser(data);
+        return data;
+    }
+
+    async deleteAccount() {
+        const data = await this.request('/auth/account', { method: 'DELETE' });
+        this.clearToken();
+        return data;
+    }
+
     // Earnings
     async getEarnings(params = {}) {
         const query = new URLSearchParams(params).toString();

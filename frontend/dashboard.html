@@ -340,6 +340,29 @@
         <div class="page" id="settingsPage">
             <div class="settings-grid">
                 <div class="settings-card">
+                    <h3>Meu Perfil</h3>
+                    <form id="editProfileForm" class="modal-form">
+                        <div class="form-group">
+                            <label for="settingsNameInput">Nome</label>
+                            <input type="text" id="settingsNameInput" required minlength="2">
+                        </div>
+                        <div class="form-group">
+                            <label for="settingsEmailInput">Email</label>
+                            <input type="email" id="settingsEmailInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Funcao</label>
+                            <input type="text" id="settingsRoleDisplay" readonly style="opacity:0.6">
+                        </div>
+                        <div class="form-group">
+                            <label>Membro desde</label>
+                            <input type="text" id="settingsSinceDisplay" readonly style="opacity:0.6">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvar Perfil</button>
+                    </form>
+                </div>
+                
+                <div class="settings-card">
                     <h3>Alterar Senha</h3>
                     <form id="changePasswordForm" class="modal-form">
                         <div class="form-group">
@@ -357,27 +380,17 @@
                         <button type="submit" class="btn btn-primary">Salvar Senha</button>
                     </form>
                 </div>
-                
-                <div class="settings-card">
-                    <h3>Minha Conta</h3>
-                    <div class="account-info">
-                        <div class="account-field">
-                            <span class="label">Nome</span>
-                            <span class="value" id="settingsName">-</span>
-                        </div>
-                        <div class="account-field">
-                            <span class="label">Email</span>
-                            <span class="value" id="settingsEmail">-</span>
-                        </div>
-                        <div class="account-field">
-                            <span class="label">Funcao</span>
-                            <span class="value" id="settingsRole">-</span>
-                        </div>
-                        <div class="account-field">
-                            <span class="label">Membro desde</span>
-                            <span class="value" id="settingsSince">-</span>
-                        </div>
-                    </div>
+
+                <div class="settings-card settings-danger">
+                    <h3>Zona de Perigo</h3>
+                    <p>Excluir sua conta ira remover permanentemente todos os seus dados, incluindo ganhos e despesas.</p>
+                    <button class="btn btn-danger" id="deleteAccountBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                        Excluir Minha Conta
+                    </button>
                 </div>
             </div>
         </div>
