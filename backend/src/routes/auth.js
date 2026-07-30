@@ -73,9 +73,8 @@ router.post('/login', [
         return res.status(401).json({ error: 'Codigo 2FA invalido' });
       }
     }
-      const token = generateToken(user.id);
-      res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, totp_enabled: user.totp_enabled } });
-    }
+    const token = generateToken(user.id);
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, totp_enabled: user.totp_enabled } });
   } catch (error) {
     console.error('Erro no login:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
