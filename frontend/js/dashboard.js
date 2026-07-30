@@ -55,6 +55,7 @@ function initNavigation() {
                 document.querySelector('.nav-item[data-page="settings"]').classList.add('active');
                 document.getElementById('pageTitle').textContent = 'Autenticacao 2FA';
                 populateSettings();
+                setTimeout(() => document.getElementById('2faStatus').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
                 return;
             }
 
