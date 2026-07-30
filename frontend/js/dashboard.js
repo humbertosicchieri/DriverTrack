@@ -41,7 +41,7 @@ function initDate() {
 }
 
 function initNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
+    const navItems = document.querySelectorAll('.nav-item, .nav-subitem');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             navItems.forEach(i => i.classList.remove('active'));
@@ -49,6 +49,15 @@ function initNavigation() {
             
             currentPage = item.dataset.page;
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+            if (currentPage === '2fa') {
+                document.getElementById('settingsPage').classList.add('active');
+                document.querySelector('.nav-item[data-page="settings"]').classList.add('active');
+                document.getElementById('pageTitle').textContent = 'Autenticacao 2FA';
+                populateSettings();
+                return;
+            }
+
             document.getElementById(currentPage + 'Page').classList.add('active');
             
             const titles = {
@@ -678,8 +687,8 @@ function initSettings() {
             return;
         }
         
-        if (newPassword.length < 6) {
-            showToast('A nova senha deve ter pelo menos 6 caracteres', 'error');
+        if (newPassword.length < 8) {
+            showToast('A nova senha deve ter pelo menos 8 caracteres', 'error');
             return;
         }
         
@@ -687,8 +696,32 @@ function initSettings() {
             await api.changePassword(currentPassword, newPassword);
             showToast('Senha alterada com sucesso', 'success');
             document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordStrength').style.display = 'none';
+            updatePasswordRequirements('');
         } catch (error) {
             showToast(error.message, 'error');
+        }
+    });
+
+    document.getElementById('newPassword').addEventListener('input', async (e) => {
+        const password = e.target.value;
+        updatePasswordRequirements(password);
+        if (password.length > 0) {
+            try {
+                const result = await api.checkPasswordStrength(password);
+                const strengthEl = document.getElementById('passwordStrength');
+                const fillEl = document.getElementById('strengthFill');
+                const textEl = document.getElementById('strengthText');
+                strengthEl.style.display = 'block';
+                const colors = { fraca: '#ff6b6b', media: '#feca57', forte: '#00d4aa', muito_forte: '#276ef1' };
+                const width = { fraca: '25%', media: '50%', forte: '75%', muito_forte: '100%' };
+                fillEl.style.width = width[result.level] || '0%';
+                fillEl.style.background = colors[result.level] || '#666';
+                textEl.textContent = result.level.replace('_', ' ').toUpperCase();
+                textEl.style.color = colors[result.level] || '#666';
+            } catch (err) {}
+        } else {
+            document.getElementById('passwordStrength').style.display = 'none';
         }
     });
 
@@ -717,6 +750,92 @@ function initSettings() {
             showToast(error.message, 'error');
         }
     });
+
+    // 2FA Setup
+    document.getElementById('enable2faBtn').addEventListener('click', async () => {
+        try {
+            const data = await api.setup2FA();
+            document.getElementById('qrContainer').innerHTML = `<img src="${data.qrCode}" alt="QR Code 2FA" width="200">`;
+            document.getElementById('totpSecret').textContent = data.secret;
+            document.getElementById('2faSetupSection').style.display = 'none';
+            document.getElementById('2faQrSection').style.display = 'block';
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+
+    document.getElementById('confirm2faBtn').addEventListener('click', async () => {
+        const code = document.getElementById('verify2faCode').value.trim();
+        if (code.length !== 6) {
+            showToast('Codigo deve ter 6 digitos', 'error');
+            return;
+        }
+        try {
+            await api.verify2FA(code);
+            showToast('2FA habilitado com sucesso', 'success');
+            document.getElementById('2faQrSection').style.display = 'none';
+            document.getElementById('2faSetupSection').style.display = 'none';
+            document.getElementById('2faDisableSection').style.display = 'block';
+            document.getElementById('2faBadge').textContent = 'Habilitado';
+            document.getElementById('2faBadge').classList.add('active');
+            const user = api.getUser();
+            user.totp_enabled = 1;
+            api.setUser(user);
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+
+    document.getElementById('cancel2faBtn').addEventListener('click', () => {
+        document.getElementById('2faQrSection').style.display = 'none';
+        document.getElementById('2faSetupSection').style.display = 'block';
+        document.getElementById('verify2faCode').value = '';
+    });
+
+    // 2FA Disable
+    document.getElementById('disable2faBtn').addEventListener('click', async () => {
+        const password = document.getElementById('disable2faPassword').value;
+        const code = document.getElementById('disable2faCode').value.trim();
+        if (!password) {
+            showToast('Digite sua senha', 'error');
+            return;
+        }
+        if (code.length !== 6) {
+            showToast('Codigo deve ter 6 digitos', 'error');
+            return;
+        }
+        try {
+            await api.disable2FA(password, code);
+            showToast('2FA desabilitado com sucesso', 'success');
+            document.getElementById('2faDisableSection').style.display = 'none';
+            document.getElementById('2faSetupSection').style.display = 'block';
+            document.getElementById('2faBadge').textContent = 'Desabilitado';
+            document.getElementById('2faBadge').classList.remove('active');
+            document.getElementById('disable2faPassword').value = '';
+            document.getElementById('disable2faCode').value = '';
+            const user = api.getUser();
+            user.totp_enabled = 0;
+            api.setUser(user);
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+}
+
+function updatePasswordRequirements(password) {
+    const checks = {
+        reqLength: password.length >= 8,
+        reqUpper: /[A-Z]/.test(password),
+        reqLower: /[a-z]/.test(password),
+        reqNumber: /[0-9]/.test(password),
+        reqSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)
+    };
+    Object.entries(checks).forEach(([id, passed]) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.toggle('met', passed);
+        }
+    });
 }
 
 function populateSettings() {
@@ -728,6 +847,18 @@ function populateSettings() {
         document.getElementById('settingsSinceDisplay').value = user.created_at 
             ? new Date(user.created_at).toLocaleDateString('pt-BR') 
             : '-';
+        
+        if (user.totp_enabled) {
+            document.getElementById('2faBadge').textContent = 'Habilitado';
+            document.getElementById('2faBadge').classList.add('active');
+            document.getElementById('2faSetupSection').style.display = 'none';
+            document.getElementById('2faDisableSection').style.display = 'block';
+        } else {
+            document.getElementById('2faBadge').textContent = 'Desabilitado';
+            document.getElementById('2faBadge').classList.remove('active');
+            document.getElementById('2faSetupSection').style.display = 'block';
+            document.getElementById('2faDisableSection').style.display = 'none';
+        }
     }
 }
 
@@ -761,8 +892,8 @@ async function loadAdminData() {
         empty.style.display = 'none';
         tbody.innerHTML = users.map(u => `
             <tr>
-                <td>${u.name}</td>
-                <td>${u.email}</td>
+                <td>${escapeHtml(u.name)}</td>
+                <td>${escapeHtml(u.email)}</td>
                 <td><span class="role-badge ${u.role}">${u.role === 'admin' ? 'Admin' : 'User'}</span></td>
                 <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-'}</td>
                 <td>
@@ -787,21 +918,23 @@ async function loadAdminData() {
 
 function showUserModal(data = null) {
     const isEdit = !!data;
+    const name = data ? escapeHtml(data.name || '') : '';
+    const email = data ? escapeHtml(data.email || '') : '';
     
     const html = `
         <form id="userForm" class="modal-form">
             <div class="form-group">
                 <label for="userName">Nome</label>
-                <input type="text" id="userNameInput" value="${data?.name || ''}" required placeholder="Nome completo">
+                <input type="text" id="userNameInput" value="${name}" required placeholder="Nome completo">
             </div>
             <div class="form-group">
                 <label for="userEmail">Email</label>
-                <input type="email" id="userEmailInput" value="${data?.email || ''}" required placeholder="email@exemplo.com" ${isEdit ? 'readonly style="opacity:0.6"' : ''}>
+                <input type="email" id="userEmailInput" value="${email}" required placeholder="email@exemplo.com" ${isEdit ? 'readonly style="opacity:0.6"' : ''}>
             </div>
             ${!isEdit ? `
             <div class="form-group">
                 <label for="userPassword">Senha</label>
-                <input type="password" id="userPasswordInput" required minlength="6" placeholder="Minimo 6 caracteres">
+                <input type="password" id="userPasswordInput" required minlength="8" placeholder="Minimo 8 caracteres (maiuscula, minuscula, numero, especial)">
             </div>
             ` : ''}
             <div class="form-group">
@@ -852,7 +985,7 @@ function showResetPasswordModal(userId) {
         <form id="resetPasswordForm" class="modal-form">
             <div class="form-group">
                 <label for="resetPassword">Nova Senha</label>
-                <input type="password" id="resetPasswordInput" required minlength="6" placeholder="Minimo 6 caracteres">
+                <input type="password" id="resetPasswordInput" required minlength="8" placeholder="Minimo 8 caracteres">
             </div>
             <div class="form-group">
                 <label for="resetPasswordConfirm">Confirmar Senha</label>
@@ -896,6 +1029,12 @@ async function deleteUser(id) {
 }
 
 // Toast notifications
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
 function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -909,7 +1048,7 @@ function showToast(message, type = 'info') {
     
     toast.innerHTML = `
         <span class="toast-icon">${icons[type] || icons.info}</span>
-        <span class="toast-message">${message}</span>
+        <span class="toast-message">${escapeHtml(message)}</span>
     `;
     
     container.appendChild(toast);

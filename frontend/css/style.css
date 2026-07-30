@@ -744,6 +744,32 @@ a:hover {
     color: var(--accent-green);
 }
 
+.nav-subitem {
+    padding: 8px 16px 8px 44px;
+    font-size: 13px;
+    gap: 10px;
+}
+
+.nav-subitem svg {
+    width: 16px;
+    height: 16px;
+}
+
+.nav-subitem:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.nav-subitem.active {
+    background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 212, 170, 0.05));
+    color: var(--accent-green);
+    font-weight: 600;
+}
+
+.nav-subitem.active svg {
+    color: var(--accent-green);
+}
+
 .sidebar-footer {
     padding: 16px 16px 20px;
     border-top: 1px solid var(--border-color);
@@ -2048,4 +2074,147 @@ a:hover {
 .btn-danger:hover {
     background: rgba(255, 107, 107, 0.25);
     border-color: rgba(255, 107, 107, 0.5);
+}
+
+/* ============================================
+   PASSWORD STRENGTH
+   ============================================ */
+.password-strength {
+    margin-top: 8px;
+}
+
+.strength-bar {
+    height: 4px;
+    background: var(--bg-input);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.strength-text {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.password-requirements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.req {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-input);
+    transition: all 0.2s ease;
+}
+
+.req.met {
+    color: var(--accent-green);
+    background: rgba(0, 212, 170, 0.1);
+}
+
+/* ============================================
+   2FA SECTION
+   ============================================ */
+.two-fa-info {
+    margin-bottom: 16px;
+}
+
+.two-fa-info p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+.two-fa-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255, 107, 107, 0.12);
+    color: var(--accent-red);
+    border: 1px solid rgba(255, 107, 107, 0.25);
+}
+
+.two-fa-badge.active {
+    background: rgba(0, 212, 170, 0.12);
+    color: var(--accent-green);
+    border-color: rgba(0, 212, 170, 0.25);
+}
+
+.qr-container {
+    text-align: center;
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: var(--radius-md);
+    display: inline-block;
+}
+
+.qr-container img {
+    display: block;
+    margin: 0 auto;
+}
+
+.secret-display {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    word-break: break-all;
+}
+
+.secret-display code {
+    background: var(--bg-input);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-secondary {
+    padding: 10px 20px;
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+
+/* ============================================
+   INPUT HINTS
+   ============================================ */
+.input-hint {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
 }

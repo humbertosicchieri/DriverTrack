@@ -68,7 +68,18 @@ router.post('/', [
 });
 
 // Update earning
-router.put('/:id', (req, res) => {
+router.put('/:id', [
+  body('platform').isIn(['uber', '99']).optional(),
+  body('date').isDate().optional(),
+  body('gross_amount').isFloat({ min: 0 }).optional(),
+  body('trips').isInt({ min: 0 }).optional(),
+  body('bonus').isFloat({ min: 0 }).optional(),
+  body('tips').isFloat({ min: 0 }).optional()
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const db = getDb();
     const { platform, date, gross_amount, trips, bonus, tips, notes } = req.body;
@@ -81,9 +92,9 @@ router.put('/:id', (req, res) => {
     db.prepare(
       'UPDATE earnings SET platform = ?, date = ?, gross_amount = ?, trips = ?, bonus = ?, tips = ?, notes = ? WHERE id = ? AND user_id = ?'
     ).run(
-      platform || existing.platform,
-      date || existing.date,
-      gross_amount || existing.gross_amount,
+      platform ?? existing.platform,
+      date ?? existing.date,
+      gross_amount ?? existing.gross_amount,
       trips ?? existing.trips,
       bonus ?? existing.bonus,
       tips ?? existing.tips,

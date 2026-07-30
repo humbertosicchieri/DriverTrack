@@ -80,6 +80,14 @@ async function initDatabase() {
     database.exec("ALTER TABLE users ADD COLUMN active INTEGER DEFAULT 1");
   }
 
+  // Migration: add 2FA columns if missing
+  try {
+    database.prepare('SELECT totp_secret FROM users LIMIT 1').get();
+  } catch {
+    database.exec("ALTER TABLE users ADD COLUMN totp_secret TEXT DEFAULT NULL");
+    database.exec("ALTER TABLE users ADD COLUMN totp_enabled INTEGER DEFAULT 0");
+  }
+
   // Create default admin user if not exists
   const adminEmail = 'admin@drivertrack.com';
   const existingAdmin = database.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);

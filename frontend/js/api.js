@@ -55,6 +55,19 @@ class ApiClient {
             method: 'POST',
             body: JSON.stringify({ email, password })
         });
+        if (data.requires2FA) {
+            return data;
+        }
+        this.setToken(data.token);
+        this.setUser(data.user);
+        return data;
+    }
+
+    async login2FA(tempToken, totpCode) {
+        const data = await this.request('/auth/login/2fa', {
+            method: 'POST',
+            body: JSON.stringify({ tempToken, totpCode })
+        });
         this.setToken(data.token);
         this.setUser(data.user);
         return data;
@@ -94,6 +107,33 @@ class ApiClient {
         const data = await this.request('/auth/account', { method: 'DELETE' });
         this.clearToken();
         return data;
+    }
+
+    // 2FA
+    async setup2FA() {
+        return this.request('/auth/2fa/setup', { method: 'POST' });
+    }
+
+    async verify2FA(code) {
+        return this.request('/auth/2fa/verify', {
+            method: 'POST',
+            body: JSON.stringify({ code })
+        });
+    }
+
+    async disable2FA(password, code) {
+        return this.request('/auth/2fa/disable', {
+            method: 'POST',
+            body: JSON.stringify({ password, code })
+        });
+    }
+
+    // Password strength
+    async checkPasswordStrength(password) {
+        return this.request('/auth/password-strength', {
+            method: 'POST',
+            body: JSON.stringify({ password })
+        });
     }
 
     // Earnings

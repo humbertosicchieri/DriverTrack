@@ -2,8 +2,27 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'driver-tracker-secret-change-in-production-' + require('crypto').randomBytes(32).toString('hex');
 
+const tempTokens = new Map();
+
 function generateToken(userId) {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '24h' });
+}
+
+function generateTempToken(userId) {
+  const token = require('crypto').randomBytes(32).toString('hex');
+  tempTokens.set(token, { userId, expires: Date.now() + 5 * 60 * 1000 });
+  return token;
+}
+
+function verifyTempToken(token) {
+  const data = tempTokens.get(token);
+  if (!data) return null;
+  if (Date.now() > data.expires) {
+    tempTokens.delete(token);
+    return null;
+  }
+  tempTokens.delete(token);
+  return data.userId;
 }
 
 function authMiddleware(req, res, next) {
@@ -45,4 +64,4 @@ function adminMiddleware(req, res, next) {
   }
 }
 
-module.exports = { generateToken, authMiddleware, adminMiddleware, JWT_SECRET };
+module.exports = { generateToken, generateTempToken, verifyTempToken, authMiddleware, adminMiddleware, JWT_SECRET };

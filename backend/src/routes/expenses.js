@@ -70,7 +70,15 @@ router.post('/', [
 });
 
 // Update expense
-router.put('/:id', (req, res) => {
+router.put('/:id', [
+  body('date').isDate().optional(),
+  body('category').isIn(CATEGORIES).optional(),
+  body('amount').isFloat({ min: 0.01 }).optional()
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
   try {
     const db = getDb();
     const { date, category, description, amount, recurring } = req.body;
@@ -83,10 +91,10 @@ router.put('/:id', (req, res) => {
     db.prepare(
       'UPDATE expenses SET date = ?, category = ?, description = ?, amount = ?, recurring = ? WHERE id = ? AND user_id = ?'
     ).run(
-      date || existing.date,
-      category || existing.category,
+      date ?? existing.date,
+      category ?? existing.category,
       description ?? existing.description,
-      amount || existing.amount,
+      amount ?? existing.amount,
       recurring !== undefined ? (recurring ? 1 : 0) : existing.recurring,
       req.params.id,
       req.userId

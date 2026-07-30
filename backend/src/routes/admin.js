@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { body, validationResult } = require('express-validator');
 const { getDb } = require('../utils/database');
 const { adminMiddleware } = require('../utils/auth');
+const { validatePasswordComplexity } = require('../utils/password');
 
 router.use(adminMiddleware);
 
@@ -36,9 +37,9 @@ router.get('/users/:id', (req, res) => {
 // Create user
 router.post('/users', [
   body('name').trim().isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
-  body('email').isEmail().normalizeEmail().withMessage('Email inválido'),
-  body('password').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
-  body('role').isIn(['admin', 'user']).withMessage('Role inválido')
+  body('email').isEmail().normalizeEmail().withMessage('Email invalido'),
+  body('password').isLength({ min: 8 }).withMessage('Senha deve ter pelo menos 8 caracteres'),
+  body('role').isIn(['admin', 'user']).withMessage('Role invalido')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -46,6 +47,10 @@ router.post('/users', [
   }
   try {
     const { name, email, password, role } = req.body;
+    const complexityErrors = validatePasswordComplexity(password);
+    if (complexityErrors.length > 0) {
+      return res.status(400).json({ errors: complexityErrors.map(e => ({ msg: e })) });
+    }
     const db = getDb();
     const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
     if (existingUser) {
@@ -98,13 +103,17 @@ router.put('/users/:id', [
 
 // Reset user password
 router.post('/users/:id/reset-password', [
-  body('password').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres')
+  body('password').isLength({ min: 8 }).withMessage('Senha deve ter pelo menos 8 caracteres')
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
   try {
+    const complexityErrors = validatePasswordComplexity(req.body.password);
+    if (complexityErrors.length > 0) {
+      return res.status(400).json({ errors: complexityErrors.map(e => ({ msg: e })) });
+    }
     const db = getDb();
     const existing = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
     if (!existing) {
