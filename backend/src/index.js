@@ -13,6 +13,10 @@ const adminRoutes = require('./routes/admin');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust the first proxy hop (nginx) so the real client IP is used
+// for rate limiting. Fixes ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
