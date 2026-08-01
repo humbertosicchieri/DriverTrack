@@ -65,6 +65,7 @@ router.post('/', [
     const expense = db.prepare('SELECT * FROM expenses WHERE id = ?').get(id);
     res.status(201).json(expense);
   } catch (error) {
+    console.error('Erro ao adicionar despesa:', error);
     res.status(500).json({ error: 'Erro ao adicionar despesa' });
   }
 });
@@ -103,6 +104,7 @@ router.put('/:id', [
     const updated = db.prepare('SELECT * FROM expenses WHERE id = ?').get(req.params.id);
     res.json(updated);
   } catch (error) {
+    console.error('Erro ao atualizar despesa:', error);
     res.status(500).json({ error: 'Erro ao atualizar despesa' });
   }
 });
@@ -118,6 +120,7 @@ router.delete('/:id', (req, res) => {
     }
     res.json({ message: 'Registro excluído com sucesso' });
   } catch (error) {
+    console.error('Erro ao excluir despesa:', error);
     res.status(500).json({ error: 'Erro ao excluir despesa' });
   }
 });

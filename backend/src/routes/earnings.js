@@ -63,6 +63,7 @@ router.post('/', [
     const earning = db.prepare('SELECT * FROM earnings WHERE id = ?').get(id);
     res.status(201).json(earning);
   } catch (error) {
+    console.error('Erro ao adicionar ganho:', error);
     res.status(500).json({ error: 'Erro ao adicionar ganho' });
   }
 });
@@ -106,6 +107,7 @@ router.put('/:id', [
     const updated = db.prepare('SELECT * FROM earnings WHERE id = ?').get(req.params.id);
     res.json(updated);
   } catch (error) {
+    console.error('Erro ao atualizar ganho:', error);
     res.status(500).json({ error: 'Erro ao atualizar ganho' });
   }
 });
@@ -121,6 +123,7 @@ router.delete('/:id', (req, res) => {
     }
     res.json({ message: 'Registro excluído com sucesso' });
   } catch (error) {
+    console.error('Erro ao excluir ganho:', error);
     res.status(500).json({ error: 'Erro ao excluir ganho' });
   }
 });

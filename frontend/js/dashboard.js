@@ -646,10 +646,9 @@ async function deleteEarning(id) {
     try {
         await api.deleteEarning(id);
         showToast('Registro excluido', 'success');
-        loadEarnings();
-        loadDashboard();
+        await Promise.all([loadEarnings(), loadDashboard()]);
     } catch (error) {
-        showToast('Erro ao excluir', 'error');
+        showToast(error.message || 'Erro ao excluir', 'error');
     }
 }
 
@@ -668,10 +667,9 @@ async function deleteExpense(id) {
     try {
         await api.deleteExpense(id);
         showToast('Registro excluido', 'success');
-        loadExpenses();
-        loadDashboard();
+        await Promise.all([loadExpenses(), loadDashboard()]);
     } catch (error) {
-        showToast('Erro ao excluir', 'error');
+        showToast(error.message || 'Erro ao excluir', 'error');
     }
 }
 
