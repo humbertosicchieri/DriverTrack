@@ -201,6 +201,10 @@ class ApiClient {
         return this.request(`/dashboard/daily?date=${date}`);
     }
 
+    async getMonthlyHistory(months = 6) {
+        return this.request(`/dashboard/history?months=${months}`);
+    }
+
     // Admin
     async adminGetUsers() {
         return this.request('/admin/users');

@@ -22,8 +22,10 @@ router.get('/summary', (req, res) => {
         break;
       }
       case 'month': {
+        // Calendar month: resets to zero on the 1st of each month
         const d = new Date(now);
-        d.setMonth(d.getMonth() - 1);
+        d.setDate(1);
+        d.setHours(0, 0, 0, 0);
         dateParam = d.toISOString().split('T')[0];
         break;
       }
@@ -125,6 +127,58 @@ router.get('/summary', (req, res) => {
   } catch (error) {
     console.error('Erro no dashboard:', error);
     res.status(500).json({ error: 'Erro ao carregar dashboard' });
+  }
+});
+
+// Get monthly history (last N months)
+router.get('/history', (req, res) => {
+  try {
+    const db = getDb();
+    const months = Math.min(parseInt(req.query.months) || 6, 12);
+
+    const monthlyEarnings = db.prepare(`
+      SELECT strftime('%Y-%m', date) as month,
+             COALESCE(SUM(gross_amount + bonus + tips), 0) as total
+      FROM earnings
+      WHERE user_id = ?
+      GROUP BY strftime('%Y-%m', date)
+    `).all(req.userId);
+
+    const monthlyExpenses = db.prepare(`
+      SELECT strftime('%Y-%m', date) as month,
+             COALESCE(SUM(amount), 0) as total
+      FROM expenses
+      WHERE user_id = ?
+      GROUP BY strftime('%Y-%m', date)
+    `).all(req.userId);
+
+    const earningsMap = {};
+    const expensesMap = {};
+    monthlyEarnings.forEach(e => earningsMap[e.month] = e.total);
+    monthlyExpenses.forEach(e => expensesMap[e.month] = e.total);
+
+    const monthNames = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    const history = [];
+    const now = new Date();
+
+    for (let i = months - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const earnings = earningsMap[key] || 0;
+      const expenses = expensesMap[key] || 0;
+      history.push({
+        month: key,
+        label: `${monthNames[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`,
+        earnings,
+        expenses,
+        netProfit: earnings - expenses
+      });
+    }
+
+    res.json(history);
+  } catch (error) {
+    console.error('Erro no historico:', error);
+    res.status(500).json({ error: 'Erro ao carregar historico' });
   }
 });
 

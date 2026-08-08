@@ -154,9 +154,58 @@ async function loadDashboard() {
         
         renderExpenseRanking(data.charts.topExpenses);
         renderCharts(data);
+        loadMonthlyHistory();
         
     } catch (error) {
         showToast('Erro ao carregar dados', 'error');
+    }
+}
+
+async function loadMonthlyHistory() {
+    try {
+        const history = await api.getMonthlyHistory(6);
+        const ctx = document.getElementById('monthlyChart').getContext('2d');
+        if (charts.monthly) charts.monthly.destroy();
+        charts.monthly = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: history.map(h => h.label),
+                datasets: [
+                    {
+                        label: 'Ganhos',
+                        data: history.map(h => h.earnings),
+                        backgroundColor: '#00d4aa',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Despesas',
+                        data: history.map(h => h.expenses),
+                        backgroundColor: '#ff6b6b',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#888' } }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#888' }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        // Chart is optional; keep silent
     }
 }
 
