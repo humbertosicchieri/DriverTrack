@@ -1,45 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
 const { body, validationResult } = require('express-validator');
 const { getDb } = require('../utils/database');
 const { generateToken, authMiddleware } = require('../utils/auth');
 const { validatePasswordComplexity } = require('../utils/password');
 const { TOTP } = require('otpauth');
 const QRCode = require('qrcode');
-
-// Register
-router.post('/register', [
-  body('name').trim().isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
-  body('email').isEmail().normalizeEmail().withMessage('Email invalido'),
-  body('password').isLength({ min: 8 }).withMessage('Senha deve ter pelo menos 8 caracteres')
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  try {
-    const { name, email, password } = req.body;
-    const complexityErrors = validatePasswordComplexity(password);
-    if (complexityErrors.length > 0) {
-      return res.status(400).json({ errors: complexityErrors.map(e => ({ msg: e })) });
-    }
-    const db = getDb();
-    const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
-    if (existingUser) {
-      return res.status(409).json({ error: 'Email ja cadastrado' });
-    }
-    const hashedPassword = await bcrypt.hash(password, 12);
-    const userId = uuidv4();
-    db.prepare('INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)').run(userId, name, email, hashedPassword);
-    const token = generateToken(userId);
-    res.status(201).json({ token, user: { id: userId, name, email, role: 'user', totp_enabled: 0 } });
-  } catch (error) {
-    console.error('Erro no registro:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
 
 // Login
 router.post('/login', [

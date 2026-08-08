@@ -437,7 +437,7 @@ async function loadExpenses() {
             <tr>
                 <td>${formatDate(e.date)}</td>
                 <td><span class="category-badge">${categoryIcons[e.category] || ''} ${categoryLabels[e.category] || e.category}</span></td>
-                <td>${e.description || '-'}</td>
+                <td>${e.description ? escapeHtml(e.description) : '-'}</td>
                 <td class="expense-value">${formatCurrency(e.amount)}</td>
                 <td>${e.recurring ? 'Sim' : 'Nao'}</td>
                 <td>
@@ -487,7 +487,7 @@ async function loadDaily() {
             expensesList.innerHTML = data.expenses.map(e => `
                 <div class="daily-item">
                     <span>${categoryIcons[e.category] || ''} ${categoryLabels[e.category] || e.category}</span>
-                    <span>${e.description || ''}</span>
+                    <span>${e.description ? escapeHtml(e.description) : ''}</span>
                     <span class="daily-item-amount expense">${formatCurrency(e.amount)}</span>
                 </div>
             `).join('');
@@ -567,7 +567,7 @@ function showEarningModal(data = null) {
             </div>
             <div class="form-group">
                 <label for="earningNotes">Observacoes</label>
-                <textarea id="earningNotes" rows="2" placeholder="Opcional">${data?.notes || ''}</textarea>
+                <textarea id="earningNotes" rows="2" placeholder="Opcional">${data?.notes ? escapeHtml(data.notes) : ''}</textarea>
             </div>
             <button type="submit" class="btn btn-primary btn-full">
                 ${isEdit ? 'Salvar Alteracoes' : 'Adicionar Ganhos'}
@@ -637,7 +637,7 @@ function showExpenseModal(data = null) {
             </div>
             <div class="form-group">
                 <label for="expenseDescription">Descricao</label>
-                <input type="text" id="expenseDescription" value="${data?.description || ''}" placeholder="Ex: Gasolina Shell">
+                <input type="text" id="expenseDescription" value="${data?.description ? escapeHtml(data.description) : ''}" placeholder="Ex: Gasolina Shell">
             </div>
             <div class="form-group">
                 <label class="checkbox-label">
@@ -946,7 +946,7 @@ async function loadAdminData() {
                 <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-'}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-icon-sm" onclick="showUserModal(${JSON.stringify(u).replace(/"/g, '&quot;')})" title="Editar">
+                        <button class="btn-icon-sm" onclick="showUserModal(${JSON.stringify(u).replace(/"/g, '&quot;').replace(/'/g, '&#39;')})" title="Editar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
                         <button class="btn-icon-sm" onclick="showResetPasswordModal('${u.id}')" title="Resetar Senha">

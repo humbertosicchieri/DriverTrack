@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'driver-tracker-secret-change-in-production-' + require('crypto').randomBytes(32).toString('hex');
+// If JWT_SECRET is not provided via env, generate a random one.
+// WARNING: with a random secret, all sessions are invalidated on restart.
+// Always set JWT_SECRET in the .env file in production.
+const JWT_SECRET = process.env.JWT_SECRET || require('crypto').randomBytes(32).toString('hex');
 
 const tempTokens = new Map();
 

@@ -19,7 +19,11 @@ app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+// CORS is only needed for cross-origin access. The frontend is served by the
+// same nginx origin, so CORS stays disabled by default. Set CORS_ORIGIN in
+// .env (e.g. https://app.exemplo.com) to allow a specific origin.
+const corsOrigin = process.env.CORS_ORIGIN || false;
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '1mb' }));
 
 // Rate limiting

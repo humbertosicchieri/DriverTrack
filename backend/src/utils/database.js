@@ -1,9 +1,20 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 
 let db;
+
+function generateRandomPassword(length = 16) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*';
+  const bytes = crypto.randomBytes(length);
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars[bytes[i] % chars.length];
+  }
+  return result;
+}
 
 function getDb() {
   if (!db) {
@@ -94,11 +105,16 @@ async function initDatabase() {
 
   if (!existingAdmin) {
     const adminId = uuidv4();
-    const hashedPassword = await bcrypt.hash('admin123', 12);
+    const adminPassword = generateRandomPassword();
+    const hashedPassword = await bcrypt.hash(adminPassword, 12);
     database.prepare(
       'INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)'
     ).run(adminId, 'Administrador', adminEmail, hashedPassword, 'admin');
-    console.log('Usuario admin criado: admin@drivertrack.com / admin123');
+    console.log('===========================================');
+    console.log('USUARIO ADMIN CRIADO - GUARDE ESTA SENHA:');
+    console.log(`Email: ${adminEmail}`);
+    console.log(`Senha: ${adminPassword}`);
+    console.log('===========================================');
   }
 
   console.log('Banco de dados inicializado com sucesso');
