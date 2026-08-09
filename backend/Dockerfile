@@ -5,6 +5,7 @@ RUN npm install --omit=dev
 COPY backend/src/ ./src/
 COPY backend/scripts/ ./scripts/
 COPY frontend/ ./frontend/
+RUN echo "$(date -u +%s)" > /app/BUILD.txt
 RUN addgroup -g 1001 -S appgroup && \
     adduser -S appuser -u 1001 -G appgroup && \
     mkdir -p /data && \

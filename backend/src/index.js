@@ -14,6 +14,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_DIR = path.join(__dirname, '..', '..', 'frontend');
 
+// Build marker (set by Dockerfile) so we can tell which build is running.
+let buildId = 'local';
+try {
+  buildId = require('fs').readFileSync('/app/BUILD.txt', 'utf8').trim();
+} catch {}
+
 // Trust the first proxy hop (Cloudflare/host proxy) so the real client IP is
 // used for rate limiting. Fixes ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
 app.set('trust proxy', 1);
@@ -77,7 +83,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.1.0', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.1.0', build: buildId, timestamp: new Date().toISOString() });
 });
 
 // SPA fallback: unknown non-API paths serve the login page (like nginx try_files)
@@ -91,7 +97,7 @@ app.use((req, res) => {
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor v1.1.0 rodando na porta ${PORT}`);
+    console.log(`Servidor v1.1.0 (build ${buildId}) rodando na porta ${PORT}`);
   });
 }).catch((err) => {
   console.error('Erro ao inicializar banco de dados:', err);
