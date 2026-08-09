@@ -7,8 +7,10 @@ COPY backend/.npmrc ./
 COPY backend/package.json ./
 RUN npm install --omit=dev
 
-COPY backend/src/ ./src/
-COPY backend/scripts/ ./scripts/
+# Mirror the repo layout so relative paths resolve the same as in local dev:
+# /app/backend/src/index.js -> ../../frontend -> /app/frontend
+COPY backend/src/ ./backend/src/
+COPY backend/scripts/ ./backend/scripts/
 COPY frontend/ ./frontend/
 RUN echo "$(date -u +%s)" > /app/BUILD.txt
 RUN addgroup -g 1001 -S appgroup && \
@@ -17,4 +19,4 @@ RUN addgroup -g 1001 -S appgroup && \
     chown -R appuser:appgroup /app /data
 USER appuser
 EXPOSE 5000
-CMD ["node", "src/index.js"]
+CMD ["node", "backend/src/index.js"]

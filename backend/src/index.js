@@ -94,7 +94,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.2.0', build: buildId, timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.2.1', build: buildId, timestamp: new Date().toISOString() });
 });
 
 // SPA fallback: unknown non-API paths serve the login page (like nginx try_files)
@@ -118,7 +118,7 @@ app.use((err, req, res, next) => {
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor v1.2.0 (build ${buildId}) rodando na porta ${PORT}`);
+    console.log(`Servidor v1.2.1 (build ${buildId}) rodando na porta ${PORT}`);
   });
 }).catch((err) => {
   console.error('Erro ao inicializar banco de dados:', err);

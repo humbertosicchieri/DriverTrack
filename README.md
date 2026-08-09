@@ -82,9 +82,9 @@ bash deploy.sh
 ```
 
 Verificação pós-deploy (esperado):
-- `/api/health` retorna `"version":"1.2.0"` com o `build` novo.
+- `/api/health` retorna `"version":"1.2.1"` com o `build` novo.
 - CSP da página é `default-src 'self'` (não `'none'`).
-- Log do container: `Servidor v1.2.0 (build <timestamp>) rodando na porta 5000`.
+- Log do container: `Servidor v1.2.1 (build <timestamp>) rodando na porta 5000`.
 
 ## Estrutura do Projeto
 
