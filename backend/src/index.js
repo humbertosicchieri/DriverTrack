@@ -60,14 +60,23 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Never cache anything (prevents browser/Cloudflare from serving stale data)
-app.use((req, res, next) => {
+// Never cache API responses (prevents browser/Cloudflare from serving stale data)
+app.use('/api/', (req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
 
-// Serve the frontend static files (single-container setup: no nginx needed)
-app.use(express.static(FRONTEND_DIR));
+// Serve the frontend static files (single-container setup: no nginx needed).
+// JS/CSS get cache-busted via ?v= in the HTML, so they can be cached safely.
+app.use(express.static(FRONTEND_DIR, {
+  setHeaders: (res, filePath) => {
+    if (/\.(js|css)$/.test(filePath)) {
+      res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    } else {
+      res.set('Cache-Control', 'no-store');
+    }
+  }
+}));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -94,7 +103,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.2.1', build: buildId, timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.2.2', build: buildId, timestamp: new Date().toISOString() });
 });
 
 // SPA fallback: unknown non-API paths serve the login page (like nginx try_files)
@@ -102,6 +111,7 @@ app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'Rota não encontrada' });
   }
+  res.set('Cache-Control', 'no-store');
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
 
@@ -118,7 +128,7 @@ app.use((err, req, res, next) => {
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor v1.2.1 (build ${buildId}) rodando na porta ${PORT}`);
+    console.log(`Servidor v1.2.2 (build ${buildId}) rodando na porta ${PORT}`);
   });
 }).catch((err) => {
   console.error('Erro ao inicializar banco de dados:', err);

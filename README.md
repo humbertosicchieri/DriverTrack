@@ -82,9 +82,24 @@ bash deploy.sh
 ```
 
 Verificação pós-deploy (esperado):
-- `/api/health` retorna `"version":"1.2.1"` com o `build` novo.
+- `/api/health` retorna `"version":"1.2.2"` com o `build` novo.
 - CSP da página é `default-src 'self'` (não `'none'`).
-- Log do container: `Servidor v1.2.1 (build <timestamp>) rodando na porta 5000`.
+- Log do container: `Servidor v1.2.2 (build <timestamp>) rodando na porta 5000`.
+- Página abre com os assets `?v=1.2.2` (cache-busting): o navegador sempre baixa o JS/CSS novos.
+
+### Cache no Cloudflare/NPM
+
+O Cloudflare costuma cachear `/js/*` e `/css/*` por até 24h, servindo JS/CSS antigos
+mesmo após redeploy (sintoma: dados desatualizados na tela, pois o navegador roda o
+JS velho). Para evitar:
+
+1. **Cache-busting** (já implementado): os HTMLs referenciam os assets com `?v=<versao>`,
+   criando URLs novas a cada versão. O backend serve JS/CSS com `max-age=31536000`
+   (imutável) e HTML/API com `no-store`.
+2. **Regra no Cloudflare**: criar uma regra para o path `/js/*` e `/css/*` com
+   **Bypass cache** (ou no mínimo verificar que não há "Cache Everything").
+3. Depois de cada deploy, **purgar o cache** do Cloudflare (Purge Everything ou
+   custom por URL) para limpar os assets antigos que ainda tenham TTL longo.
 
 ## Estrutura do Projeto
 
