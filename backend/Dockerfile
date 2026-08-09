@@ -1,8 +1,10 @@
 FROM node:18-alpine
 WORKDIR /app
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm install --omit=dev
-COPY src/ ./src/
+COPY backend/src/ ./src/
+COPY backend/scripts/ ./scripts/
+COPY frontend/ ./frontend/
 RUN addgroup -g 1001 -S appgroup && \
     adduser -S appuser -u 1001 -G appgroup && \
     mkdir -p /data && \

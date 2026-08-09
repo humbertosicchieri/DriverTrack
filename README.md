@@ -62,7 +62,11 @@ openssl rand -hex 32
 docker-compose up -d
 ```
 
-6. Acesse: `http://localhost`
+6. Acesse: `http://localhost:8000`
+
+> Um único container (Node/Express) serve o frontend e a API. Os arquivos
+> estáticos ficam embutidos na imagem. Para atualizar o frontend, faça
+> `git pull` e recrie o container: `docker-compose up -d --build`.
 
 ## Estrutura do Projeto
 
@@ -71,8 +75,11 @@ driver-tracker/
 ├── backend/
 │   ├── Dockerfile
 │   ├── package.json
+│   ├── scripts/
+│   │   ├── dedupe.js        # remove despesas duplicadas
+│   │   └── diagnose.js      # diagnostica dados vs. cards do dashboard
 │   └── src/
-│       ├── index.js
+│       ├── index.js         # API + serve o frontend estático
 │       ├── routes/
 │       │   ├── auth.js
 │       │   ├── dashboard.js
@@ -91,7 +98,6 @@ driver-tracker/
 │       ├── auth.js
 │       └── dashboard.js
 ├── docker-compose.yml
-├── nginx.conf
 ├── .env.example
 ├── .gitignore
 └── README.md
