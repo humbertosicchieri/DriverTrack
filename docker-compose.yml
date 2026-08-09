@@ -10,8 +10,5 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - DB_PATH=/data/database.sqlite
     volumes:
-      - db-data:/data
+      - ./data:/data
     restart: unless-stopped
-
-volumes:
-  db-data:

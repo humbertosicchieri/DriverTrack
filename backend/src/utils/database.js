@@ -24,18 +24,29 @@ function getDb() {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
+    let dbFile;
     try {
       db = new Database(dbPath);
+      dbFile = dbPath;
     } catch (err) {
       const fallbackPath = path.join(__dirname, '../../data/database.sqlite');
+      console.error('===========================================');
+      console.error('ERRO GRAVE: nao foi possivel abrir o banco de dados configurado:');
+      console.error(`  ${dbPath}`);
+      console.error(`  ${err.message}`);
+      console.error('Usando arquivo TEMPORARIO. Os dados serao PERDIDOS no restart.');
+      console.error('Verifique se o volume/pasta do banco esta montado no container.');
+      console.error('===========================================');
       const fallbackDir = path.dirname(fallbackPath);
       if (!fs.existsSync(fallbackDir)) {
         fs.mkdirSync(fallbackDir, { recursive: true });
       }
       db = new Database(fallbackPath);
+      dbFile = fallbackPath;
     }
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
+    console.log(`Banco de dados em uso: ${dbFile}`);
   }
   return db;
 }
