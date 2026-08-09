@@ -82,10 +82,10 @@ bash deploy.sh
 ```
 
 Verificação pós-deploy (esperado):
-- `/api/health` retorna `"version":"1.2.3"` com o `build` novo.
+- `/api/health` retorna `"version":"1.2.4"` com o `build` novo.
 - CSP da página é `default-src 'self'` (não `'none'`).
-- Log do container: `Servidor v1.2.3 (build <timestamp>) rodando na porta 5000`.
-- Página abre com os assets `?v=1.2.3` (cache-busting): o navegador sempre baixa o JS/CSS novos.
+- Log do container: `Servidor v1.2.4 (build <timestamp>) rodando na porta 5000`.
+- Página abre com os assets `?v=1.2.4` (cache-busting): o navegador sempre baixa o JS/CSS novos.
 
 ### Cache no Cloudflare/NPM
 
@@ -103,12 +103,10 @@ JS velho). Para evitar:
 
 ### Sintoma: "tela não atualiza" após adicionar ganho/despesa
 
-Se o POST falha com toast de erro e a tela não atualiza, o backend pode ter
-atingido o **rate limit** (`/api/*` = 300 requisições / 15min por IP; `/api/auth/*`
-= 10 / 15min). Testes intensos ou monitoramentos podem estourar a cota e todos
-os `/api/*` passam a responder 429 ("Muitas requisições..."). O contador é em
-memória: `docker restart drivertrack-backend-1` zera imediatamente. `/api/health`
-está fora do limite (skipped) para não gastar cota de monitoramento.
+O rate limit agora **só bloqueia gravações** (POST/PUT/DELETE: 300 req / 15min por IP;
+`/api/auth/*` = 10 / 15min). **GETs nunca são bloqueados**, então recarregar a página
+não trava os dados. Se uma gravação falhar com 429 ("Muitas requisições..."), o
+contador é em memória: `docker restart drivertrack-backend-1` zera imediatamente.
 
 ## Estrutura do Projeto
 

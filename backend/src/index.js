@@ -78,14 +78,21 @@ app.use(express.static(FRONTEND_DIR, {
   }
 }));
 
-// Rate limiting
-const limiter = rateLimit({
+// Rate limiting: only mutating requests (POST/PUT/PATCH/DELETE) are throttled.
+// GET requests are read-only, so page reloads can never lock the user out of
+// their data. (A burst of reloads used to exhaust the /api/* budget and the
+// screen only updated again when the window reset ~15 min later.)
+const mutatingLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
-  skip: (req) => req.path === '/health',
   message: { error: 'Muitas requisições. Tente novamente em 15 minutos.' }
 });
-app.use('/api/', limiter);
+app.use('/api/', (req, res, next) => {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    return mutatingLimiter(req, res, next);
+  }
+  next();
+});
 
 // Stricter rate limit for auth
 const authLimiter = rateLimit({
@@ -104,7 +111,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.2.3', build: buildId, timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.2.4', build: buildId, timestamp: new Date().toISOString() });
 });
 
 // SPA fallback: unknown non-API paths serve the login page (like nginx try_files)
@@ -129,7 +136,7 @@ app.use((err, req, res, next) => {
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor v1.2.3 (build ${buildId}) rodando na porta ${PORT}`);
+    console.log(`Servidor v1.2.4 (build ${buildId}) rodando na porta ${PORT}`);
   });
 }).catch((err) => {
   console.error('Erro ao inicializar banco de dados:', err);
