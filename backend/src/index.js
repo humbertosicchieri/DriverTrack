@@ -26,6 +26,12 @@ const corsOrigin = process.env.CORS_ORIGIN || false;
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '1mb' }));
 
+// Never cache API responses (prevents browser/Cloudflare from serving stale data)
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
