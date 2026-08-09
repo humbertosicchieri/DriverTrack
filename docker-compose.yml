@@ -10,5 +10,9 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - DB_PATH=/data/database.sqlite
     volumes:
-      - ./data:/data
+      - db-data:/data
     restart: unless-stopped
+
+volumes:
+  db-data:
+    name: drivertrack_db-data
