@@ -30,7 +30,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+      scriptSrc: ["'self'", 'https://cdn.jsdelivr.net'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:'],
       connectSrc: ["'self'", 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
@@ -48,6 +48,17 @@ app.use(helmet({
 const corsOrigin = process.env.CORS_ORIGIN || false;
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '1mb' }));
+
+// Handle malformed JSON bodies: return 400 instead of the default HTML page
+app.use((err, req, res, next) => {
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'JSON invalido no corpo da requisicao' });
+  }
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Corpo da requisicao muito grande' });
+  }
+  next(err);
+});
 
 // Never cache anything (prevents browser/Cloudflare from serving stale data)
 app.use((req, res, next) => {
@@ -83,7 +94,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.1.0', build: buildId, timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.2.0', build: buildId, timestamp: new Date().toISOString() });
 });
 
 // SPA fallback: unknown non-API paths serve the login page (like nginx try_files)
@@ -94,10 +105,20 @@ app.use((req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
 
+// Final error handler: never leak stack traces to the client
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error('Erro nao tratado:', err);
+  if (req.path.startsWith('/api/')) {
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+  res.status(500).send('Erro interno do servidor');
+});
+
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor v1.1.0 (build ${buildId}) rodando na porta ${PORT}`);
+    console.log(`Servidor v1.2.0 (build ${buildId}) rodando na porta ${PORT}`);
   });
 }).catch((err) => {
   console.error('Erro ao inicializar banco de dados:', err);

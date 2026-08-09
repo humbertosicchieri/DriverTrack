@@ -1,7 +1,12 @@
 FROM node:18-alpine
 WORKDIR /app
-COPY backend/package*.json ./
+
+# Install deps. .npmrc disables audit/fund noise. If a package-lock.json is
+# added later, switch to `npm ci` for fully reproducible builds.
+COPY backend/.npmrc ./
+COPY backend/package.json ./
 RUN npm install --omit=dev
+
 COPY backend/src/ ./src/
 COPY backend/scripts/ ./scripts/
 COPY frontend/ ./frontend/

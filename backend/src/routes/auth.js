@@ -25,6 +25,9 @@ router.post('/login', [
     if (!user) {
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
+    if (user.active !== 1) {
+      return res.status(403).json({ error: 'Conta desativada. Contate o administrador.' });
+    }
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ error: 'Email ou senha incorretos' });
@@ -68,6 +71,9 @@ router.post('/login/2fa', [
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     if (!user || !user.totp_enabled || !user.totp_secret) {
       return res.status(400).json({ error: '2FA nao configurado' });
+    }
+    if (user.active !== 1) {
+      return res.status(403).json({ error: 'Conta desativada. Contate o administrador.' });
     }
     const totp = new TOTP({ issuer: 'DriverTrack', label: user.email, algorithm: 'SHA1', digits: 6, period: 30, secret: user.totp_secret });
     const delta = totp.validate({ token: totpCode, window: 1 });

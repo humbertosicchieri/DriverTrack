@@ -1,5 +1,6 @@
 let currentPage = 'overview';
 let charts = {};
+let adminUsers = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!api.isAuthenticated()) {
@@ -14,9 +15,30 @@ document.addEventListener('DOMContentLoaded', () => {
     initModals();
     initSettings();
     initAdmin();
+    initActionDelegation();
     
     document.getElementById('periodSelect').addEventListener('change', loadDashboard);
 });
+
+// Event delegation for dynamically generated action buttons. Replaces inline
+// onclick handlers, allowing a strict CSP without 'unsafe-inline'.
+function initActionDelegation() {
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        switch (action) {
+            case 'edit-earning': editEarning(id); break;
+            case 'delete-earning': deleteEarning(id); break;
+            case 'edit-expense': editExpense(id); break;
+            case 'delete-expense': deleteExpense(id); break;
+            case 'edit-user': showUserModal(id); break;
+            case 'reset-password': showResetPasswordModal(id); break;
+            case 'delete-user': deleteUser(id); break;
+        }
+    });
+}
 
 function initUser() {
     const user = api.getUser();
@@ -404,10 +426,10 @@ async function loadEarnings() {
                 <td class="total-cell">${formatCurrency(e.gross_amount + e.bonus + e.tips)}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-icon-sm" onclick="editEarning('${e.id}')" title="Editar">
+                        <button class="btn-icon-sm" data-action="edit-earning" data-id="${e.id}" title="Editar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn-icon-sm danger" onclick="deleteEarning('${e.id}')" title="Excluir">
+                        <button class="btn-icon-sm danger" data-action="delete-earning" data-id="${e.id}" title="Excluir">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         </button>
                     </div>
@@ -442,10 +464,10 @@ async function loadExpenses() {
                 <td>${e.recurring ? 'Sim' : 'Nao'}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-icon-sm" onclick="editExpense('${e.id}')" title="Editar">
+                        <button class="btn-icon-sm" data-action="edit-expense" data-id="${e.id}" title="Editar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn-icon-sm danger" onclick="deleteExpense('${e.id}')" title="Excluir">
+                        <button class="btn-icon-sm danger" data-action="delete-expense" data-id="${e.id}" title="Excluir">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         </button>
                     </div>
@@ -938,6 +960,7 @@ async function loadAdminData() {
         }
         
         empty.style.display = 'none';
+        adminUsers = users;
         tbody.innerHTML = users.map(u => `
             <tr>
                 <td>${escapeHtml(u.name)}</td>
@@ -946,13 +969,13 @@ async function loadAdminData() {
                 <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '-'}</td>
                 <td>
                     <div class="action-buttons">
-                        <button class="btn-icon-sm" onclick="showUserModal(${JSON.stringify(u).replace(/"/g, '&quot;').replace(/'/g, '&#39;')})" title="Editar">
+                        <button class="btn-icon-sm" data-action="edit-user" data-id="${escapeHtml(u.id)}" title="Editar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn-icon-sm" onclick="showResetPasswordModal('${u.id}')" title="Resetar Senha">
+                        <button class="btn-icon-sm" data-action="reset-password" data-id="${escapeHtml(u.id)}" title="Resetar Senha">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                         </button>
-                        <button class="btn-icon-sm danger" onclick="deleteUser('${u.id}')" title="Excluir">
+                        <button class="btn-icon-sm danger" data-action="delete-user" data-id="${escapeHtml(u.id)}" title="Excluir">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         </button>
                     </div>
@@ -964,7 +987,10 @@ async function loadAdminData() {
     }
 }
 
-function showUserModal(data = null) {
+function showUserModal(idOrData = null) {
+    const data = (typeof idOrData === 'string')
+        ? (adminUsers.find(u => u.id === idOrData) || null)
+        : idOrData;
     const isEdit = !!data;
     const name = data ? escapeHtml(data.name || '') : '';
     const email = data ? escapeHtml(data.email || '') : '';

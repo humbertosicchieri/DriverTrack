@@ -68,6 +68,24 @@ docker-compose up -d
 > estáticos ficam embutidos na imagem. Para atualizar o frontend, faça
 > `git pull` e recrie o container: `docker-compose up -d --build`.
 
+## Deploy limpo do zero (servidor)
+
+Se o servidor estiver rodando código/versão antiga (sintomas: tela 404, CSP
+`default-src 'none'`, dados não atualizam mesmo após restart), apague
+**tudo** do projeto e reconstrua. O script `deploy.sh` remove container e
+imagens antigas (eliminando qualquer build velho em cache) e preserva o
+volume `drivertrack_db-data` com seus dados:
+
+```bash
+git pull
+bash deploy.sh
+```
+
+Verificação pós-deploy (esperado):
+- `/api/health` retorna `"version":"1.2.0"` com o `build` novo.
+- CSP da página é `default-src 'self'` (não `'none'`).
+- Log do container: `Servidor v1.2.0 (build <timestamp>) rodando na porta 5000`.
+
 ## Estrutura do Projeto
 
 ```
@@ -107,11 +125,16 @@ driver-tracker/
 
 - Senhas criptografadas com Bcrypt (12 rounds)
 - Tokens JWT com expiração de 24h
+- `JWT_SECRET` obrigatório em produção (falha rápida no boot se ausente)
 - Rate limiting para prevenir brute force
 - Helmet para headers de segurança HTTP
+- CSP restrito (`default-src 'self'`, sem `unsafe-inline` para scripts)
 - Validação de entrada em todas as rotas
-- CORS configurado
+- Contas desativadas são rejeitadas no login e nos tokens
+- JSON malformado retorna 400 sem vazar detalhes internos
+- CORS desabilitado por padrão (mesma origem)
 - Container Docker com usuário não-root
+- Healthcheck no docker-compose
 
 ## Licença
 
