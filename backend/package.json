@@ -1,6 +1,6 @@
 {
   "name": "driver-tracker-backend",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Driver expense tracker backend",
   "main": "src/index.js",
   "scripts": {

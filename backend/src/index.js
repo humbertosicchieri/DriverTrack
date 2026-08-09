@@ -81,7 +81,8 @@ app.use(express.static(FRONTEND_DIR, {
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
+  skip: (req) => req.path === '/health',
   message: { error: 'Muitas requisições. Tente novamente em 15 minutos.' }
 });
 app.use('/api/', limiter);
@@ -103,7 +104,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '1.2.2', build: buildId, timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '1.2.3', build: buildId, timestamp: new Date().toISOString() });
 });
 
 // SPA fallback: unknown non-API paths serve the login page (like nginx try_files)
@@ -128,7 +129,7 @@ app.use((err, req, res, next) => {
 // Initialize database and start server
 initDatabase().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor v1.2.2 (build ${buildId}) rodando na porta ${PORT}`);
+    console.log(`Servidor v1.2.3 (build ${buildId}) rodando na porta ${PORT}`);
   });
 }).catch((err) => {
   console.error('Erro ao inicializar banco de dados:', err);
