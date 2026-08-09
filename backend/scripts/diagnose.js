@@ -10,12 +10,20 @@
 
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
 const dbPath = process.env.DB_PATH || path.join(__dirname, '../data/database.sqlite');
+const dir = path.dirname(dbPath);
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
+
+console.log('DB_PATH (env):', process.env.DB_PATH || '(nao definido)');
+console.log('Banco:', path.resolve(dbPath));
+
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 
-console.log('Banco:', dbPath);
 console.log('Agora (servidor local):', new Date().toString());
 console.log('Agora (UTC):', new Date().toISOString());
 
